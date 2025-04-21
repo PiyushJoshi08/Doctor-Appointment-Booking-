@@ -10,12 +10,14 @@ import MyAppointments from './pages/MyAppointments'
 import Appointments from './pages/Appointments'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import { ToastContainer, toast } from 'react-toastify';
 
 {/*used for routing and setting up end points*/}
 
 const App = () => {
   return (
     <div className='mx-4 sm:mx-[10%]'> {/*for margin and scaling to smaller screens*/}
+    <ToastContainer/>
     <Navbar/> {/*outside routes so that visible everypage*/}
       <Routes>
         <Route path='/' element={<Home/>}/>

@@ -1,8 +1,10 @@
 import React, { use, useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { assets } from '../assets/assets';
 import RelatedDoctors from '../components/RelatedDoctors';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 /*to book new appointments and first we have to get doctor id and store it in a variable*/
 
@@ -10,8 +12,10 @@ import RelatedDoctors from '../components/RelatedDoctors';
 
 const Appointments = () => {
 
+  const navigate=useNavigate()
+
   const {docId}= useParams() //we get doctor's id as parameter from this
-  const {doctors,currencySymbol}=useContext(AppContext) //all doctors data array
+  const {doctors,currencySymbol, backendUrl,token,getDoctorsData}=useContext(AppContext) //all doctors data array , also backend url and alldocdata and token is for integrating it with backend
   const daysOfWeek=['SUN','MON','TUE','WED','THU','FRI','SAT'] //to print
 
   const [docInfo,setDocInfo]=useState(null)
@@ -64,10 +68,22 @@ const Appointments = () => {
       {
         let formattedTime=currentDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
 
+
+        //this part is to check if doctor has booked that slot or not, only those slots which have not been booked are pushed in array
+        let day=currentDate.getDate()
+        let month=currentDate.getMonth()+1 //indes st from 0
+        let year=currentDate.getFullYear()
+        const slotDate=day+"_"+month+"_"+year
+        const slotTime=formattedTime;
+        const isSlotAvailable=docInfo.slots_booked[slotDate] && docInfo.slots_booked[slotDate].includes(slotTime) ? false : true
+
+        if(isSlotAvailable)
+      {
         timeSlots.push({
           datetime:new Date(currentDate),
           time:formattedTime
         })
+      }
         //increment by 30min for slots
         currentDate.setMinutes(currentDate.getMinutes()+30)
 
@@ -79,12 +95,50 @@ const Appointments = () => {
   }
 
 
+  const bookAppointment = async()=>{   //to integrate withbackend to make a booking, basically to make api call using axios
+    if(!token)
+    {
+      toast.warn('Login to book Appointment')
+      return navigate('/login') //navitage to login page
+    }
+    try{
+      const date=docSlots[slotIndex][0].datetime
+
+      let day=date.getDate()
+      let month=date.getMonth()+1
+      let year=date.getFullYear()
+
+      const slotDate=day+"_"+month+"_"+year
+      //console.log(slotDate)
+
+      //API call to book appointment
+
+      const {data}=await axios.post(backendUrl+'/api/user/book-appointment',{docId,slotDate,slotTime},{headers:{token}})
+      if(data.success)
+      {
+        toast.success(data.message)
+        getDoctorsData() //to get updated slots and etc
+        navigate('/my-appointments') //,my apps me bhej do user ko
+      }
+      else{
+        toast.error(data.message)
+      }
+    }
+    catch(error)
+    {
+      console.log(error)
+      toast.error(error.message)
+    }
+
+  }
+
+
   useEffect(()=>{
     fetchDocInfo()
   },[doctors,docId]) //used useeffect to run the fetchDocInfo function if there is any change in dependency array, i.e doctors or docinfos
 
   useEffect(()=>{
-    getAvailableSlots() //agar docinfoc hange hui toh slots change krne padenge
+    getAvailableSlots() //agar docinfo change hui toh slots change krne padenge
   },[docInfo])
 
 
@@ -148,7 +202,7 @@ const Appointments = () => {
           })}
         </div>
 
-        <button className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an Appointment</button>
+        <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an Appointment</button>
 
       </div>
 

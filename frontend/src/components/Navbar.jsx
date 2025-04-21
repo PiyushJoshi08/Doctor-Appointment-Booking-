@@ -1,15 +1,23 @@
-import React,{useState} from 'react'
+import React,{useContext, useState} from 'react'
 import {assets} from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { AppContext } from '../context/AppContext';
 
-{/*navlink allows us to know which page is in active state, to allows us to set a property active int he page which is active, allows us to put underline effect in active link, underline effect done in index.css */}
+/*navlink allows us to know which page is in active state, to allows us to set a property active int he page which is active, allows us to put underline effect in active link, underline effect done in index.css */
 
 const Navbar = () => {
 
     const navigate=useNavigate();
 
     const [showMenu,setShowMenu]=useState(false);
-    const [token,setToken]=useState(true); /*token means logged in */
+    const {token,setToken,userData}=useContext(AppContext) //isse humko naya wala updated token mila login krne ke baad
+   // const [token,setToken]=useState(true); /*token means logged in */ HATA DIYA BECAUSE YE PURANA THA, NOW UPDATED TOKEN LAAAYE FROM CONTEXT\
+
+   const logout=()=>{ //logout button call hoone pe ye functionc all hoga and hum local storage and state variable dono me se token ko hata denge
+    setToken(false)
+    localStorage.removeItem('token')
+   }
+
   return (
     <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
         <img onClick={()=>{navigate('/'); scrollTo(0,0)}} className='w-20 cursor-pointer'src={assets.logo} alt=""/>
@@ -34,15 +42,15 @@ const Navbar = () => {
         <div className='flex items-center gap-4'>
             {
                 /*ternary operator, shows login if not logged in and if logged in then returns nothing, i.e an empty div */
-                token
+                token && userData
                 ?<div className='flex items-center gap-2 cursor-pointer group relative'>
-                    <img className='w-10 rounded-full' src={assets.profile_pic} alt=""/>
+                    <img className='w-10 rounded-full' src={userData.image} alt=""/>
                     <img className='w-2.5'src={assets.dropdown_icon} alt=" "/>
                     <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600  z-20 hidden group-hover:block'> {/*dropdown menu options*/}
                         <div className='min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4'> {/*hover kroge tabhi dikhega */}
                             <p onClick={()=>navigate('my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
                             <p onClick={()=>navigate('my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p> {/*hover krke black hoga */}
-                            <p onClick={()=>setToken(false)}className='hover:text-black cursor-pointer'>Logout</p>
+                            <p onClick={logout}className='hover:text-black cursor-pointer'>Logout</p>
                         </div>
                     </div>
                 </div>

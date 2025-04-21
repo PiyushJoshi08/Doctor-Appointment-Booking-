@@ -105,4 +105,19 @@ const loginAdmin = async( req, res)=>{
     }
 }
 
-export {addDoctor , loginAdmin} //we export thuis function and create a new route in routes
+//API to get all doctors list for admin panel
+
+const allDoctors= async(req,res)=>{
+    try{
+        const doctors=await doctorModel.find({}).select('-password') //remove the password property from query
+        res.json({success:true,doctors})//we send doctor data and success=true
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.json({success:false , message:error.message});
+    }
+
+}
+
+export {addDoctor , loginAdmin, allDoctors} //we export thuis function and create a new route in routes

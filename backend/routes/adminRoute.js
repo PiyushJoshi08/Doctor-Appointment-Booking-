@@ -1,7 +1,8 @@
 import express from 'express';
-import { addDoctor, loginAdmin } from '../controllers/adminController.js';
+import { addDoctor, allDoctors, loginAdmin } from '../controllers/adminController.js';
 import upload from '../middlewares/multer.js';
 import authAdmin from '../middlewares/authAdmin.js';
+import { changeAvailablity } from '../controllers/doctorController.js';
 
 
 //first we create router
@@ -15,5 +16,11 @@ adminRouter.post('/add-doctor',authAdmin,upload.single('image'),addDoctor) // en
 //route for admin login
 //for login we need post req
 adminRouter.post('/login', loginAdmin); //when this route then loginAdmin function will be called which handles the post request
+
+
+adminRouter.post('/all-doctors',authAdmin,allDoctors) //ye route toh ye fn call hoga and authadmin is middleware for checking admin
+
+//route to change availability of doctor
+adminRouter.post('/change-availability',authAdmin,changeAvailablity)
 
 export default adminRouter

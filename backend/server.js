@@ -5,6 +5,9 @@ import 'dotenv/config' //to  use environment variable
 import connectDB from './config/mongodb.js' //import connection to db
 import connectCloudinary from './config/cloudinary.js'
 import adminRouter from './routes/adminRoute.js'
+import doctorRouter from './routes/doctorRoute.js'
+import userModel from './models/userModel.js'
+import userRouter from './routes/userRoute.js'
 
 //app config
 const app=express()
@@ -23,6 +26,12 @@ app.use(cors()) //allows connection of frontend to backend
 //api endpoints
 app.use('/api/admin',adminRouter) //if this endpoint then adminRouter will be used and the api controller function which is addDoctor will be executed
 //localhost:4000/api/admin/add-doctor
+
+
+app.use('/api/doctor',doctorRouter) //doctor ke routes handle krne wala instance
+
+
+app.use('/api/user',userRouter)
 
 
 app.get('/',(req,res)=>{

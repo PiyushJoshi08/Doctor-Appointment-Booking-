@@ -1,6 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { assets } from '../assets/assets'
+//import { assets } from '../assets/assets'
+import { AppContext } from '../context/AppContext'
+import {assets} from '../assets/assets.js'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 
 //to make editable make a stat variable edit and if edit is true then we make it input else we make it a para tag
@@ -9,7 +13,7 @@ import { assets } from '../assets/assets'
 const MyProfile = () => {
 
 
-  const [userData,setUserData]=useState({ //initialized with an object
+  /*const [userData,setUserData]=useState({ //initialized with an object
     name:"Piyush Joshi",
     image:assets.profile_pic,
     email:"piyushmtm303442@gmail.com",
@@ -20,14 +24,66 @@ const MyProfile = () => {
     },
     gender:'Male',
     dob:'2004-02-08'
-  }) //contains the user data
+  }) //contains the user data*/ // YE PURANA WALA THA ISKO HATA KRKE DATABASE SE JO DATA AAYA HUM VO LENGE
+   const {userData,setUserData, token, backendUrl,loadUserProfileData}=useContext(AppContext)
 
 
   const [isEdit,setIsEdit]=useState(false);//stores whether it is edited
 
-  return (
+
+
+  //NEW UPDATED TO UPDATE THE CHANGES MADE HERE TO THE DATABASE
+  const [image,setImage]=useState(false)
+  const updateUserProfileData=async()=>{ //function to make api call to update user daata
+    //ye sab app context se data aayega, token,backendurl and so on
+    try{
+      const formData=new FormData
+
+      //ab userData ko formdata me daalo
+      formData.append('name',userData.name)
+      formData.append('phone',userData.phone)
+      formData.append('address',JSON.stringify(userData.address))
+      formData.append('gender',userData.gender)
+      formData.append('dob',userData.dob)
+      image && formData.append('image',image) //agar image update hui hai toh he usko update karo
+
+
+      //API call karo to update
+      const {data}=await axios.post(backendUrl+'/api/user/update-profile',formData,{headers:{token}})
+      if(data.success)
+      {
+        toast.success(data.message)
+        //update successful hai to refetch kro user data
+        await loadUserProfileData()
+        setIsEdit(false)
+        setImage(false)
+      }
+      else{
+      //console.log(error)
+      toast.error(data.message)
+      }
+    }
+    catch(error){
+      console.log(error)
+      toast.error(error.message)
+    }
+
+  }
+
+  //what it does is returns this only if userData is there
+  return userData &&(
     <div className='max-w-lg flex flex-col gap-2 text-sm '>
-      <img className='w-36 rounded' src={userData.image} alt=""/>
+      { //edit dabane pe krne pe image chali jaayegi
+        isEdit
+        ? <label htmlFor="image"> {/*for image upload */}
+          <div className='inline-block relative cursor-pointer'>
+            <img className='w-36 rounded opacity-75' src={image ? URL.createObjectURL(image): userData.image} alt="" />
+            <img className='w-10 absolute bottom-12 right-12' src={image ? '': assets.upload_icon} alt="" />
+          </div>
+          <input onChange={(e)=>setImage(e.target.files[0])} type="file" id="image" hidden/> 
+        </label>
+        : <img className='w-36 rounded' src={userData.image} alt=""/>
+      }
       
       { //agar isedit true hai toh input krne ka show krega otherwise name show krega
         isEdit
@@ -87,7 +143,7 @@ const MyProfile = () => {
       <div className='mt-10'>
         {
           isEdit
-          ? <button className='border border-primary px-8 py-2 rounded-full hover:bg-primary hover:text-white transition-all' onClick={()=>setIsEdit(false)}>Save Information</button> //save info button
+          ? <button className='border border-primary px-8 py-2 rounded-full hover:bg-primary hover:text-white transition-all' onClick={updateUserProfileData}>Save Information</button> //save info button
           : <button className='border border-primary px-8 py-2 rounded-full hover:bg-primary hover:text-white transition-all' onClick={()=>setIsEdit(true)}>Edit</button> //edit button
         }
       </div>
