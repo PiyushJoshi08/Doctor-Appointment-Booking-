@@ -10,6 +10,9 @@ const AdminContextProvider = (props)=>{  //arrow function banaya jo context prov
     //we will create a state variable to store token
     const [aToken,setAToken]=useState(localStorage.getItem('aToken')?localStorage.getItem('aToken'):''); //admin token, if local storage me token hai toh usko assign krdo otherwise empoty string
     const [doctors,setDoctors]=useState([]) //to store all doctors from api call this is used
+    const [appointments,setAppointments]=useState([]) //to store list of all appointments from api call
+    const [dashData,setDashData]=useState(false) //to store dashboard data from api call
+
     //URL of backend
     const backendUrl=import.meta.env.VITE_BACKEND_URL
 
@@ -52,10 +55,67 @@ const AdminContextProvider = (props)=>{  //arrow function banaya jo context prov
             toast.error(error.message)
         }
     }
+    //done after makin g that adminrooute for all appointments, dont in context so that it can be saved and accessed anywhere easily
+    const getAllAppointments= async()=>{
+        try{
+            const {data}=await axios.get(backendUrl+'/api/admin/appointments',{headers:{aToken}})
+            if(data.success)
+            {
+                setAppointments(data.appointments)
+                console.log(data.appointments)
+            }
+            else{
+                toast.error(data.message)
+            }
+        }
+        catch(error)
+        {
+            toast.error(error.message)
+        }
+    }
+
+    const cancelAppointment=async(appointmentId)=>{
+        try{
+            const {data}=await axios.post(backendUrl+'/api/admin/cancel-appointment',{appointmentId},{headers:{aToken}})
+            if(data.success)
+            {
+                toast.success(data.message)
+                getAllAppointments()
+            }
+            else{
+                toast.error(data.message)
+            }
+        }
+        catch(error)
+        {
+            toast.error(error.message)
+        }
+    }
+
+    //to call api endpoint to get dashboard data
+    const getDashData= async(req,res)=>{
+        try{
+            const {data}=await axios.get(backendUrl+'/api/admin/dashboard',{headers:{aToken}})
+            if(data.success)
+            {
+                setDashData(data.dashData)
+                console.log(data.dashData)
+            }
+            else{
+                toast.error(data.message)
+            }
+        }
+        catch(error)
+        {
+            toast.error(error.message)
+        }
+    }
 
     const value={
         aToken,setAToken,
-        backendUrl,doctors,getAllDoctors,changeAvailability
+        backendUrl,doctors,getAllDoctors,changeAvailability,
+        appointments,setAppointments,getAllAppointments,cancelAppointment,
+        getDashData,dashData
 
     }
 

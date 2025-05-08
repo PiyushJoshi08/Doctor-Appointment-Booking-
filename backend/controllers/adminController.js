@@ -3,7 +3,8 @@ import bcrypt from "bcrypt"
 import {v2 as cloudinary} from "cloudinary"
 import doctorModel from '../models/doctorModel.js'
 import jwt from 'jsonwebtoken'
-
+import appointmentModel from "../models/appointmentModel.js"
+import userModel from "../models/userModel.js"
 //Admin can add a doctor, this is API for adding a doctor from admin panel
 
 const addDoctor=async(req,res)=>{ //req and res as param
@@ -120,4 +121,71 @@ const allDoctors= async(req,res)=>{
 
 }
 
-export {addDoctor , loginAdmin, allDoctors} //we export thuis function and create a new route in routes
+
+//API to get all appointment list
+
+const appointmentsAdmin = async(req,res)=>{
+    try{
+        const appointments=await appointmentModel.find({}) /*will find all the appoiintments */
+        res.json({success:true,appointments})
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.json({success:false , message:error.message});
+    }
+}
+
+
+//api to cancel an appointment from the admin panel
+const appointmentCancel = async(req,res)=>{
+    try{
+        //isme difference ye hai ki humko user verify nhi krna padega toh usko pass he nhi krenge
+        const {appointmentId}=req.body
+
+        const appointmentData=await appointmentModel.findById(appointmentId)
+
+
+        //cancelled property true krni padegi
+        await appointmentModel.findByIdAndUpdate(appointmentId,{cancelled:true}) //cancelled property true krdi
+
+        //ab cancelled ho gya toh vo slot available ho jaayega doctor ka
+        const {docId,slotDate,slotTime}=appointmentData
+        const doctorData=await doctorModel.findById(docId)
+        let slots_booked=doctorData.slots_booked //getting unupdates slots of that doctor
+        slots_booked[slotDate]=slots_booked[slotDate].filter(e=>e!==slotTime) //making new array by removing slot
+        await doctorModel.findByIdAndUpdate(docId,{slots_booked}) //updating new array
+        res.json({success:true,message:'Appointment Cancelled'})
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.json({success:false , message:error.message});
+    }
+}
+
+//api to get dashboard data for admin paanel
+const adminDashboard=async(req,res)=>{
+    try{
+        //number of appointment and latest
+        const doctors=await doctorModel.find({}) //saare bhej dega ye
+        const users= await userModel.find({}) //saare
+        const appointments=await appointmentModel.find({})//saare dega
+
+        const dashData= { //we will return this dashData so we declare these key value pairs
+            doctors:doctors.length,
+            patients:users.length,
+            appointments:appointments.length,
+            latestAppointments: appointments.reverse().slice(0,5) //5 latest appointments show krenge
+        }
+
+        res.json({success:true, dashData})
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.json({success:false , message:error.message});
+    }
+}
+
+export {addDoctor , loginAdmin, allDoctors,appointmentsAdmin, appointmentCancel,adminDashboard} //we export thuis function and create a new route in routes

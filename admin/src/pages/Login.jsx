@@ -3,6 +3,7 @@ import { assets } from '../assets/assets'
 import { AdminContext } from '../context/AdminContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { DoctorContext } from '../context/DoctorContext';
 //for login form
 //toastify se notifications add kre website me
 const Login = () => {
@@ -13,6 +14,8 @@ const Login = () => {
     const [password,setPassword]=useState('');
 
     const {setAToken,backendUrl}= useContext(AdminContext) //setatoken function anbd backend url
+
+    const {setDToken}=useContext(DoctorContext)
 
 
     //function to handle form submission
@@ -42,6 +45,17 @@ const Login = () => {
         }
         else{ //call doctor login api
 
+          const {data}=await axios.post(backendUrl+'/api/doctor/login',{email,password})
+          if(data.success)
+          {
+            localStorage.setItem('dToken',data.token) //local storage me update kra
+            setDToken(data.token) //current state variable me store kra
+            console.log(data.token);
+            
+          }
+          else{
+            toast.error(data.message)
+          }
         }
       }
       catch(error)

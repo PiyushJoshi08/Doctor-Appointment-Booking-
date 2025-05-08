@@ -277,7 +277,30 @@ const paymentRazorpay =async(req,res)=>{
 
     //creating an order in razorpay
     const order = await razorpayInstance.orders.create(options)
-    res.json({success:true.order})
+    res.json({success:true,order})
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.json({success:false , message:error.message});
+    }
+}
+
+
+//API controller to verify payment of razorpay and update payment to true
+const verifyRazorpay = async(req,res)=>{
+    try{
+        const {razorpay_order_id}=req.body
+        const orderInfo=await razorpayInstance.orders.fetch(razorpay_order_id) //order info mil jaayegi
+        
+        if(orderInfo.status==='paid')
+        {
+            await appointmentModel.findByIdAndUpdate(orderInfo.receipt,{payment:true})
+            res.json({success:true,message:'Payment Successful'})
+        }
+        else{
+            res.json({success:false,message:'Payment Failed'})
+        }
     }
     catch(error)
     {
@@ -288,7 +311,7 @@ const paymentRazorpay =async(req,res)=>{
 
 
 
-export {registerUser,loginUser,getProfile,updateProfile,bookAppointment, listAppointment,cancelAppointment,paymentRazorpay}
+export {registerUser,loginUser,getProfile,updateProfile,bookAppointment, listAppointment,cancelAppointment,paymentRazorpay,verifyRazorpay}
 
 //NOTE:userdata ko context me daaldo taaki har jagah access kr sakein
 // after making all integrqate all these with frontend

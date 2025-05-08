@@ -10,23 +10,34 @@ import Dashboard from './pages/Admin/Dashboard';
 import AllAppointments from './pages/Admin/AllAppointments';
 import AddDoctor from './pages/Admin/AddDoctor';
 import DoctorsList from './pages/Admin/DoctorsList';
+import { DoctorContext } from './context/DoctorContext';
+import DoctorDashboard from './pages/Doctor/DoctorDashboard';
+import DoctorAppointments from './pages/Doctor/DoctorAppointments';
+import DoctorProfile from './pages/Doctor/DoctorProfile';
 
 const App = () => {
 
   const {aToken}=useContext(AdminContext)
+  const {dToken}=useContext(DoctorContext)
 
-  return aToken? (  //agar token hai toh
+  return aToken ||dToken ? (  //agar atoken ya dtoken hai toh ye dikhao otherwise show login
     <div className='bg=[#F8F9FD]'>
       <ToastContainer/>
       <NavBar/>
       <div className='flex items-start'>
         <Sidebar/>
         <Routes>
+          {/*admin routes  we let thiem coexist in same application because doctor cannot access admin linnks wihtout aToken so we just let them be*/}
           <Route path='/' element={<></>}/>
           <Route path='/admin-dashboard' element={<Dashboard/>}/> {/*route for dashboard.jsx */}
           <Route path='/all-appointments' element={<AllAppointments/>}/>
           <Route path='/add-doctor' element={<AddDoctor/>}/>
           <Route path='/doctor-list' element={<DoctorsList/>}/>
+          {/*doctor routes */}
+          <Route path='/doctor-dashboard' element={<DoctorDashboard/>}/>
+          <Route path='/doctor-appointments' element={<DoctorAppointments/>}/>
+          <Route path='/doctor-profile' element={<DoctorProfile/>}/>
+          
         </Routes>
       </div>
     </div>

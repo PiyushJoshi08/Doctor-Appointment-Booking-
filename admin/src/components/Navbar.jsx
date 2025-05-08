@@ -2,21 +2,26 @@ import React, { useContext } from 'react'
 import { assets } from '../assets/assets'
 import { AdminContext } from '../context/AdminContext'
 import { useNavigate } from 'react-router-dom'
+import { DoctorContext } from '../context/DoctorContext'
 
 const NavBar = () => {
 
     const {aToken,setAToken}=useContext(AdminContext)
+    const {dToken, setDToken}=useContext(DoctorContext)
 
     //for navigation we use useNavigate hook
     const navigate=useNavigate()
 
-    //function to handle logout
+    //function to handle logout for admin
     const logout= ()=>{
         navigate('/') //user lofout krega toh usko homepage me bhej denge
 
         aToken && setAToken('') //if atoken is there then it sets itwith empty string
 
         aToken && localStorage.removeItem('aToken') //removes token frfom local storage
+
+        dToken&& setDToken('')
+        dToken && localStorage.removeItem('dToken')
     }
 
   return (

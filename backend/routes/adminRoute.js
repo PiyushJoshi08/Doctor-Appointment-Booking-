@@ -1,5 +1,5 @@
 import express from 'express';
-import { addDoctor, allDoctors, loginAdmin } from '../controllers/adminController.js';
+import { addDoctor, adminDashboard, allDoctors, appointmentCancel, appointmentsAdmin, loginAdmin } from '../controllers/adminController.js';
 import upload from '../middlewares/multer.js';
 import authAdmin from '../middlewares/authAdmin.js';
 import { changeAvailablity } from '../controllers/doctorController.js';
@@ -22,5 +22,14 @@ adminRouter.post('/all-doctors',authAdmin,allDoctors) //ye route toh ye fn call 
 
 //route to change availability of doctor
 adminRouter.post('/change-availability',authAdmin,changeAvailablity)
+
+//route to get asll appointments list
+adminRouter.get('/appointments',authAdmin,appointmentsAdmin)
+
+//route to cancel appointment from admin panel
+adminRouter.post('/cancel-appointment',authAdmin,appointmentCancel)
+
+//route to get dashboaard data
+adminRouter.get('/dashboard',authAdmin,adminDashboard)
 
 export default adminRouter
